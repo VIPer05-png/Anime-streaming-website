@@ -1,0 +1,38 @@
+CREATE TABLE users (
+    userID INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    role VARCHAR(10) NOT NULL
+);
+
+CREATE TABLE anime (
+    animeID INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    thumbnailURL VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE episodes (
+    episodeID INT AUTO_INCREMENT PRIMARY KEY,
+    animeID INT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    videoURL VARCHAR(255) NOT NULL,
+    episodeNumber INT NOT NULL,
+    seasonNumber INT NOT NULL,
+    FOREIGN KEY (animeID) REFERENCES anime(animeID)
+);
+
+CREATE TABLE watchlist (
+    watchlistID INT AUTO_INCREMENT PRIMARY KEY,
+    userID INT,
+    animeID INT,
+    FOREIGN KEY (userID) REFERENCES users(userID),
+    FOREIGN KEY (animeID) REFERENCES anime(animeID)
+);
+
+CREATE TABLE admins (
+    admin_id VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+);
