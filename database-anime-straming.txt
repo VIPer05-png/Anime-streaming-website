@@ -1,3 +1,5 @@
+CREATE DATABASE otakuhub;
+
 CREATE TABLE users (
     userID INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
