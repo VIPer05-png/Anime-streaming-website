@@ -1,111 +1,130 @@
 <?php
+// Include database configuration
 include 'config.php';
 session_start();
 
+// Ensure the user is an admin
 if ($_SESSION['role'] != 'admin') {
     header("location: ../index.php");
     exit;
 }
 
-if($_SERVER["REQUEST_METHOD"] == "POST") {
-    $title = $_POST['title'];
-    $description = $_POST['description'];
-    $thumbnailURL = $_POST['thumbnail'];
+// Process the form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validate and sanitize inputs
+    $title = trim(mysqli_real_escape_string($conn, $_POST['title']));
+    $description = trim(mysqli_real_escape_string($conn, $_POST['description']));
+    $thumbnailURL = trim(mysqli_real_escape_string($conn, $_POST['thumbnail']));
 
-    $sql = "INSERT INTO anime (title, description, thumbnailURL) VALUES ('$title', '$description', '$thumbnailURL')";
-    
-    if ($conn->query($sql) === TRUE) {
-        header("location: index.php");
+    // Verify inputs are not empty after sanitization
+    if (empty($title) || empty($description) || empty($thumbnailURL)) {
+        echo "<p style='color: red;'>All fields are required. Please fill in all details.</p>";
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        // Prepare the SQL query
+        $stmt = $conn->prepare("INSERT INTO anime (title, description, thumbnailURL) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $title, $description, $thumbnailURL);
+
+        // Execute the query
+        if ($stmt->execute()) {
+            header("location: index.php"); // Redirect on success
+        } else {
+            echo "<p style='color: red;'>Error: " . $stmt->error . "</p>";
+        }
+
+        // Close the prepared statement
+        $stmt->close();
     }
 
+    // Close the database connection
     $conn->close();
 }
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Anime</title>
     <style>
         body {
-            background-color: #121212; /* Dark background for a modern look */
-            color: #ffffff; /* Light text for better contrast */
-            font-family: 'Arial', sans-serif; /* Clean and modern font */
+            background-color: #121212; /* Dark theme */
+            color: #ffffff; /* Light text */
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            flex-direction: column; /* Arrange content in a column */
+            flex-direction: column;
         }
-
         h2 {
             font-size: 28px;
             margin-bottom: 20px;
-            color: #ffa500; /* Orange color to match your theme */
+            color: #ffa500; /* Accent color */
         }
-
         form {
-            background-color: #1e1e1e; /* Slightly lighter background for the form */
-            padding: 20px 40px 20px 20px; /* Adjust right padding */
+            background-color: #1e1e1e; /* Slightly lighter background for form */
+            padding: 25px 30px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
-            width: 100%;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6); /* Soft shadow for depth */
+            width: 90%;
             max-width: 400px;
         }
-
         label {
             font-size: 16px;
-            color: #ffa500; /* Orange color for labels */
+            color: #ffa500;
             margin-bottom: 10px;
             display: block;
         }
-
-        input[type="text"],
-        textarea {
+        input[type="text"], textarea {
             width: 100%;
             padding: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: none;
             border-radius: 5px;
-            background-color: #333333; /* Darker input background */
-            color: #ffffff; /* White text inside inputs */
+            background-color: #333333; /* Input field background */
+            color: #ffffff; /* White text in input */
             font-size: 14px;
+            box-sizing: border-box; /* Consistent sizing */
         }
-
         textarea {
-            resize: none; /* Prevent resizing for a more consistent layout */
-            height: 100px; /* Set a fixed height for the textarea */
+            resize: none;
+            height: 100px;
         }
-
         input[type="submit"] {
             width: 100%;
-            padding: 10px;
-            background-color: #ffa500; /* Orange button */
+            padding: 12px;
+            background-color: #ffa500; /* Submit button */
             color: #ffffff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: bold;
         }
-
         input[type="submit"]:hover {
-            background-color: #ff8c00; /* Slightly darker orange on hover */
+            background-color: #ff8c00; /* Hover effect */
         }
-
+        p {
+            font-size: 14px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <h2>Add Anime</h2>
-    <form method="post" enctype="multipart/form-data">
-        <label>Title:</label>
-        <input type="text" name="title" required><br>
-        <label>Description:</label>
-        <textarea name="description" required></textarea><br>
-        <label>Thumbnail URL:</label>
-        <input type="text" name="thumbnail" required><br>
+    <form method="post">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required>
+        
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea>
+        
+        <label for="thumbnail">Thumbnail URL:</label>
+        <input type="text" id="thumbnail" name="thumbnail" required>
+        
         <input type="submit" value="Add Anime">
     </form>
 </body>
